@@ -28,8 +28,19 @@
  *      .catch((error) => console.log(error.message)) // 'Error: Wrong parameter is passed!
  *                                                    //  Ask her again.';
  */
-function willYouMarryMe(/* isPositiveAnswer */) {
-  throw new Error('Not implemented');
+function willYouMarryMe(isPositiveAnswer) {
+  async function innerPromise(value) {
+    if (value === undefined) {
+      throw new Error('Wrong parameter is passed! Ask her again.');
+    }
+    if (value) {
+      return 'Hooray!!! She said "Yes"!';
+    }
+
+    return 'Oh no, she said "No".';
+  }
+
+  return innerPromise(isPositiveAnswer);
 }
 
 
@@ -48,8 +59,8 @@ function willYouMarryMe(/* isPositiveAnswer */) {
  *    })
  *
  */
-function processAllPromises(/* array */) {
-  throw new Error('Not implemented');
+function processAllPromises(array) {
+  return Promise.all(array);
 }
 
 /**
@@ -71,8 +82,8 @@ function processAllPromises(/* array */) {
  *    })
  *
  */
-function getFastestPromise(/* array */) {
-  throw new Error('Not implemented');
+function getFastestPromise(array) {
+  return Promise.race(array);
 }
 
 /**
@@ -92,8 +103,31 @@ function getFastestPromise(/* array */) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+async function chainPromises(array, action) {
+  async function results(arrayArg) {
+    const resultsArr = arrayArg.reduce(async (value, item) => {
+      const itemData = item.then((data) => data, () => {});
+
+      const itemDataRes = await itemData;
+      const currValue = await value;
+
+      if (itemDataRes) {
+        return [...currValue, itemDataRes];
+      }
+
+      return currValue;
+    }, []);
+
+    const resultArrAwaited = await resultsArr;
+    return resultArrAwaited;
+  }
+
+  const resultsArray = results(array);
+  const finalArr = await resultsArray;
+
+  const finalResult = finalArr.reduce((value, item) => action(value, item));
+
+  return finalResult;
 }
 
 module.exports = {
